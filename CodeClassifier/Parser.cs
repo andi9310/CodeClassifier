@@ -14,12 +14,12 @@ namespace CodeClassifier
     public class Parser
     {
         private readonly string[] _source;
-        private readonly string _sourceString = string.Empty;
+        private readonly string _sourceString;
 
         public Parser(TextReader stream)
         {
             _sourceString = stream.ReadToEnd();
-            _source = _sourceString.Split(new[] {'\n'});
+            _source = _sourceString.Split('\n');
         }
 
         private Dictionary<string, KeyValuePair<int, int>> ListVariables()

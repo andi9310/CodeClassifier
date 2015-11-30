@@ -22,9 +22,9 @@ namespace CodeClassifier.Classifiers.Bayess
             }
         }
 
-        public DataTable Data { get; private set; }
+        public DataTable Data { get; }
 
-        public void Add(String programmerId, IEnumerable<double> parameters)
+        public void Add(string programmerId, IEnumerable<double> parameters)
         {
             var ar = parameters.ToArray();
             var row = Data.NewRow();

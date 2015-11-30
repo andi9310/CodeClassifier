@@ -25,12 +25,20 @@ namespace CodeClassifier
         private const double Alpha = 1.0;
         private readonly List<IClassifier> _classifiers;
         public int ParsingProgress { get; set; } = 10;
-        public int TeachingProgress { get;  set; } = 0;
+        public int TeachingProgress { get; set; } = 0;
+        private string[] _files;
+        private bool _isPaused;
+        private bool _isStopped;
+        private long _lastParsed;
+        private bool _isParsingInProgress;
+        private string _name;
+        private ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>> _learningSet;
 
-        object progresslock = new object();
 
-        public int ItemsToTeach { get; private set; } = 50;
-        public int ItemsToTeachByClassifiers { get; private set; } = 0;
+        readonly object _progresslock = new object();
+
+        public int ItemsToTeach { get; private set; }
+        public int ItemsToTeachByClassifiers { get; private set; }
 
         //private double Progress { get; set; }
 
@@ -62,54 +70,79 @@ namespace CodeClassifier
 
         private void TeachClassifier(string author)
         {
-            var learningSet = new ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>>();
+            _learningSet = new ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>>();
             // _progress = 0.0;
-            var name = author;
+            _isStopped = false;
+
+            _name = author;
             var ofd = new OpenFileDialog { Multiselect = true };
             var result = ofd.ShowDialog();
             if (result != true) return;
-            var files = ofd.OpenFiles();
-            Dispatcher.Invoke(() => pb.Value = 0);
-            Dispatcher.Invoke(() => pb2.Value = 0);
-            Dispatcher.Invoke(() => pb.Maximum = files.Count());
-            Dispatcher.Invoke(() => pb2.Maximum = pb.Maximum * _classifiers.Count());
+            _files = ofd.FileNames;
+            Dispatcher.Invoke(() => Pb.Value = 0);
+            Dispatcher.Invoke(() => Pb2.Value = 0);
+            Dispatcher.Invoke(() => Pb.Maximum = _files.Length);
+            Dispatcher.Invoke(() => Pb2.Maximum = Pb.Maximum * _classifiers.Count);
+            ItemsToTeach = _files.Length;
+            ItemsToTeachByClassifiers = ItemsToTeach * _classifiers.Count;
+            _isParsingInProgress = true;
+            var parsingLoopResult = ParseAll();
+            _lastParsed += parsingLoopResult.LowestBreakIteration ?? (ItemsToTeach - _lastParsed);
+            _isParsingInProgress = false;
+            if (_lastParsed == ItemsToTeach)
+            {
+                TeachAll();
+            }
+        }
 
-            ItemsToTeachByClassifiers = ItemsToTeach * _classifiers.Count();
-            Parallel.ForEach
-                (
-                    files.Select(file => new StreamReader(file)).Select(s =>
-                    {
-                        try
-                        {
-                            return new Parser(s);
-                        }
-                        finally
-                        {
-                            s.Close();
-                        }
-                    }),
-                    parser =>
-                    {
-                        learningSet.Add(new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(name,
-                parser.Parse()));
-                        lock (progresslock)
-                        {
-                            Dispatcher.Invoke(() => pb.Value++);
-                        }
-                    });
+        private void TeachAll()
+        {
 
             Parallel.ForEach(_classifiers, classifier =>
             {
-                foreach (var keyValuePair in learningSet)
+                foreach (var keyValuePair in _learningSet)
                 {
                     classifier.Teach(keyValuePair);
-                    lock (progresslock)
+                    lock (_progresslock)
                     {
-                        Dispatcher.Invoke(() => pb2.Value++);
+                        Dispatcher.Invoke(() => Pb2.Value++);
 
                     }
                 }
             });
+        }
+
+        private ParallelLoopResult ParseAll()
+        {
+            var x =  Parallel.ForEach
+                (
+                    _files.Skip((int)_lastParsed),
+                    (file, state) =>
+                    {
+                        if (_isPaused)
+                        {
+                            state.Break();
+                        }
+                        if (_isStopped)
+                        {
+                            state.Stop();
+                        }
+                        else
+                        {
+                            using (var sr = new StreamReader(File.Open(file, FileMode.Open)))
+                            {
+                                var parser = new Parser(sr);
+                                _learningSet.Add(new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(_name, parser.Parse()));
+
+                            }
+                            lock (_progresslock)
+                            {
+                                Dispatcher.Invoke(() => Pb.Value++);
+                            }
+                        }
+
+                    });
+            return x;
         }
 
         private async void Browse_Click(object sender, RoutedEventArgs e)
@@ -138,48 +171,6 @@ namespace CodeClassifier
                     ResultLabel.Content = item.Classify(p.Parse());
                 }
             }
-        }
-
-        private void SaveAsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var sfd = new SaveFileDialog();
-            sfd.ShowDialog();
-            // var serializer = new Serializer();
-
-            //    Serializer.SerializeObject(sfd.FileName, _learningSet);
-        }
-
-        private void OpenButton_Click(object sender, RoutedEventArgs e)
-        {
-            //    try
-            //    {
-            //        //var ofd = new OpenFileDialog();
-            //       // var result = ofd.ShowDialog();
-
-            //   //     var serializer = new Serializer();
-            //        //var x = Serializer.DeSerializeObject(ofd.FileName);
-            //       // var f = x as ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>>;
-
-            //        _isFileOpen = true;
-            //    }
-            //    catch (Exception h)
-            //    {
-            //        MessageBox.Show(h.Message);
-            //    }
-        }
-
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-            //if (_dataBaseFileName != null)
-            //{
-            //    var serializer = new Serializer();
-            //    //    Serializer.SerializeObject(_dataBaseFileName, _dataBase);
-            //}
-            //else
-            //{
-
-            //    MessageBox.Show("");
-            //}
         }
 
         private void TextModeButton_Click(object sender, RoutedEventArgs e)
@@ -255,19 +246,6 @@ namespace CodeClassifier
                         new Dictionary<string, Dictionary<string, ResultsInfo>>();
                     foreach (var classifier in _classifiers)
                     {
-                        //if (
-                        //    !resultsNumbersDictionary.TryAdd(classifier.ToString(),
-                        //        new ConcurrentDictionary<string, ResultsInfo>()))
-                        //    throw new Exception("lel22");
-                        //if (
-                        //    di.EnumerateDirectories()
-                        //        .Any(
-                        //            directory =>
-                        //                !resultsNumbersDictionary[classifier.ToString()].TryAdd(directory.Name,
-                        //                    new ResultsInfo())))
-                        //{
-                        //    throw new Exception("lel");
-                        //}
 
                         resultsNumbersDictionary.Add(classifier.ToString(),
                             new Dictionary<string, ResultsInfo>());
@@ -280,27 +258,6 @@ namespace CodeClassifier
 
                     }
 
-                    //Parallel.ForEach(_classifiers, classifier =>
-                    //{
-                    //    foreach (var test in testSet)
-                    //    {
-                    //        var s = classifier.Classify(test.Value);
-                    //        if (s == test.Key)
-                    //        {
-                    //            resultsNumbersDictionary[classifier.ToString()][s].Relevant++;
-                    //            resultsNumbersDictionary[classifier.ToString()][s].RelevantRetrieved++;
-                    //            resultsNumbersDictionary[classifier.ToString()][s].Retrieved++;
-                    //        }
-                    //        else
-                    //        {
-                    //            resultsNumbersDictionary[classifier.ToString()][test.Key].Relevant++;
-                    //            resultsNumbersDictionary[classifier.ToString()][s].Retrieved++;
-                    //        }
-                    //        Console.WriteLine("test skonczony");
-                    //    }
-                    //    Console.WriteLine("klasifajer skonczony");
-
-                    //});
                     foreach (var classifier in _classifiers)
                     {
                         foreach (var test in testSet)
@@ -381,6 +338,41 @@ namespace CodeClassifier
             writer.Close();
             ostrm.Close();
             FreeConsole();
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isParsingInProgress)
+            {
+                _isPaused = true;
+            }
+        }
+
+        private async void ResumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isPaused) return;
+            var task = new Task(() =>
+            {
+                _isPaused = false;
+                _isParsingInProgress = true;
+                var parsingLoopResult = ParseAll();
+                _lastParsed += parsingLoopResult.LowestBreakIteration ?? (ItemsToTeach - _lastParsed);
+                _isParsingInProgress = false;
+                if (_lastParsed != ItemsToTeach) return;
+                TeachAll();
+                _lastParsed = 0;
+            });
+
+            task.Start();
+            await task;
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isParsingInProgress)
+            {
+                _isStopped = true;
+            }
         }
     }
 }

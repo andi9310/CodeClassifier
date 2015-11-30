@@ -6,22 +6,26 @@
         Title="CodeClassifier" Height="350" Width="525"       
         >
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="270*"/>
+            <RowDefinition Height="49*"/>
+        </Grid.RowDefinitions>
         <Button Name="BrowseButton" Content="Browse sources" HorizontalAlignment="Left" Margin="391,40,0,0" VerticalAlignment="Top" Width="102" Click="Browse_Click"/>
         <Label Name="ResultLabel" Content="" HorizontalAlignment="Left" Margin="46,229,0,0" VerticalAlignment="Top" Width="106"
                x:FieldModifier="private" />
         <Button Name="RunButton" Content="Run classifier" HorizontalAlignment="Left" Margin="392,240,0,0" VerticalAlignment="Top" Width="102" Click="RunButton_Click"/>
-        <Button Content="Save as database" HorizontalAlignment="Left" Margin="392,152,0,0" VerticalAlignment="Top" Width="102" Click="SaveAsButton_Click" Visibility="Collapsed"/>
-        <Button Content="Open database" HorizontalAlignment="Left" Margin="392,77,0,0" VerticalAlignment="Top" Width="101" Click="OpenButton_Click" Visibility="Collapsed"/>
-        <Button Content="Save database" HorizontalAlignment="Left" Margin="392,115,0,0" VerticalAlignment="Top" Width="102" Click="SaveButton_Click" IsEnabled="{Binding IsFileOpen}" Visibility="Collapsed"/>
         <TextBox Name="AuthorBox" HorizontalAlignment="Left" Height="23" Margin="46,53,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="181"/>
         <ComboBox Name="ClassifierSelector" HorizontalAlignment="Left" Margin="374,202,0,0" VerticalAlignment="Top" Width="120" Text="Wybierz klasyfikator"/>
         <Label Content="Enter programmer's name:" HorizontalAlignment="Left" Margin="46,22,0,0" VerticalAlignment="Top"/>
         <Label Content="Result:" HorizontalAlignment="Left" Margin="46,198,0,0" VerticalAlignment="Top"/>
         <Label Name="DoneLabel" Content="Done" HorizontalAlignment="Left" Margin="246,50,0,0" VerticalAlignment="Top" Visibility="Collapsed"/>
         <ProgressBar Name="ProgressBar" HorizontalAlignment="Left" Height="17" Margin="46,96,0,0" VerticalAlignment="Top" Width="181" Visibility="Collapsed"/>
-        <Button Name="TextModeButton" Content="Text mode" HorizontalAlignment="Left" Margin="10,289,0,0" VerticalAlignment="Top" Width="75" Click="TextModeButton_Click"/>
-        <ProgressBar  Name="pb"  Minimum="0" HorizontalAlignment="Left" Height="10" Margin="85,113,0,0" VerticalAlignment="Top" Width="100"/>
-        <ProgressBar Name="pb2" Minimum="0" HorizontalAlignment="Left" Height="10" Margin="110,152,0,0" VerticalAlignment="Top" Width="100"/>
+        <Button Name="TextModeButton" Content="Text mode" HorizontalAlignment="Left" Margin="10,19.369,0,0" VerticalAlignment="Top" Width="75" Click="TextModeButton_Click" Grid.Row="1"/>
+        <ProgressBar  Name="Pb"  Minimum="0" HorizontalAlignment="Left" Height="10" Margin="85,113,0,0" VerticalAlignment="Top" Width="100"/>
+        <ProgressBar Name="Pb2" Minimum="0" HorizontalAlignment="Left" Height="10" Margin="110,152,0,0" VerticalAlignment="Top" Width="100"/>
+        <Button x:Name="PauseButton" Content="Pause" HorizontalAlignment="Left" Margin="213,108,0,0" VerticalAlignment="Top" Width="75" Click="PauseButton_Click"/>
+        <Button x:Name="StopButton" Content="Stop" HorizontalAlignment="Left" Margin="290,108,0,0" VerticalAlignment="Top" Width="75" Click="StopButton_Click"/>
+        <Button x:Name="ResumeButton" Content="Resume" HorizontalAlignment="Left" Margin="370,108,0,0" VerticalAlignment="Top" Width="75" Click="ResumeButton_Click"/>
 
     </Grid>
 </Window>

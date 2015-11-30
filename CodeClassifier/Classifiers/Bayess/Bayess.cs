@@ -55,9 +55,9 @@ namespace CodeClassifier.Classifiers.Bayess
                 for (var i = 1; i < table.Columns.Count; i++)
                 {
                     row[a] =
-                        SelectRows(table, i, string.Format("{0} = '{1}'", table.Columns[0].ColumnName, t.Name)).Mean();
+                        SelectRows(table, i, $"{table.Columns[0].ColumnName} = '{t.Name}'").Mean();
                     row[++a] =
-                        SelectRows(table, i, string.Format("{0} = '{1}'", table.Columns[0].ColumnName, t.Name))
+                        SelectRows(table, i, $"{table.Columns[0].ColumnName} = '{t.Name}'")
                             .Variance();
                     a++;
                 }

@@ -15,7 +15,7 @@ namespace CodeClassifier.Classifiers.Bayess
             var doubles = source as IList<double> ?? source.ToList();
             var avg = doubles.Average();
             var d = doubles.Aggregate(0.0, (total, next) => total + Math.Pow(next - avg, 2));
-            return d/(doubles.Count() - 1);
+            return d/(doubles.Count - 1);
         }
 
         public static double Mean(this IEnumerable<double> source)
@@ -24,7 +24,7 @@ namespace CodeClassifier.Classifiers.Bayess
             if (!doubles.Any())
                 return 0.0;
 
-            double length = doubles.Count();
+            double length = doubles.Count;
             var sum = doubles.Sum();
             return sum/length;
         }
