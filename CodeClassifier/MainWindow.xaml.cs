@@ -24,13 +24,21 @@ namespace CodeClassifier
     {
         private const double Alpha = 1.0;
         private readonly List<IClassifier> _classifiers;
+        public int ParsingProgress { get; set; } = 10;
+        public int TeachingProgress { get;  set; } = 0;
+
+        object progresslock = new object();
+
+        public int ItemsToTeach { get; private set; } = 50;
+        public int ItemsToTeachByClassifiers { get; private set; } = 0;
+
         //private double Progress { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
             _classifiers = new List<IClassifier> { new BayesianClassifier() };
-            for (var i = 1; i <= 130; i *=2)
+            for (var i = 1; i <= 130; i *= 2)
             {
                 _classifiers.Add(new KNearestNeighboursClassifier(i));
             }
@@ -60,10 +68,16 @@ namespace CodeClassifier
             var ofd = new OpenFileDialog { Multiselect = true };
             var result = ofd.ShowDialog();
             if (result != true) return;
+            var files = ofd.OpenFiles();
+            Dispatcher.Invoke(() => pb.Value = 0);
+            Dispatcher.Invoke(() => pb2.Value = 0);
+            Dispatcher.Invoke(() => pb.Maximum = files.Count());
+            Dispatcher.Invoke(() => pb2.Maximum = pb.Maximum * _classifiers.Count());
 
+            ItemsToTeachByClassifiers = ItemsToTeach * _classifiers.Count();
             Parallel.ForEach
                 (
-                    ofd.OpenFiles().Select(file => new StreamReader(file)).Select(s =>
+                    files.Select(file => new StreamReader(file)).Select(s =>
                     {
                         try
                         {
@@ -74,14 +88,26 @@ namespace CodeClassifier
                             s.Close();
                         }
                     }),
-                    parser => learningSet.Add(new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(name,
-                        parser.Parse())));
+                    parser =>
+                    {
+                        learningSet.Add(new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(name,
+                parser.Parse()));
+                        lock (progresslock)
+                        {
+                            Dispatcher.Invoke(() => pb.Value++);
+                        }
+                    });
 
             Parallel.ForEach(_classifiers, classifier =>
             {
                 foreach (var keyValuePair in learningSet)
                 {
                     classifier.Teach(keyValuePair);
+                    lock (progresslock)
+                    {
+                        Dispatcher.Invoke(() => pb2.Value++);
+
+                    }
                 }
             });
         }

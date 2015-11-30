@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
         Title="CodeClassifier" Height="350" Width="525"       
-        DataContext="{Binding RelativeSource={RelativeSource Self}}"
         >
     <Grid>
         <Button Name="BrowseButton" Content="Browse sources" HorizontalAlignment="Left" Margin="391,40,0,0" VerticalAlignment="Top" Width="102" Click="Browse_Click"/>
@@ -21,6 +20,8 @@
         <Label Name="DoneLabel" Content="Done" HorizontalAlignment="Left" Margin="246,50,0,0" VerticalAlignment="Top" Visibility="Collapsed"/>
         <ProgressBar Name="ProgressBar" HorizontalAlignment="Left" Height="17" Margin="46,96,0,0" VerticalAlignment="Top" Width="181" Visibility="Collapsed"/>
         <Button Name="TextModeButton" Content="Text mode" HorizontalAlignment="Left" Margin="10,289,0,0" VerticalAlignment="Top" Width="75" Click="TextModeButton_Click"/>
+        <ProgressBar  Name="pb"  Minimum="0" HorizontalAlignment="Left" Height="10" Margin="85,113,0,0" VerticalAlignment="Top" Width="100"/>
+        <ProgressBar Name="pb2" Minimum="0" HorizontalAlignment="Left" Height="10" Margin="110,152,0,0" VerticalAlignment="Top" Width="100"/>
 
     </Grid>
 </Window>
