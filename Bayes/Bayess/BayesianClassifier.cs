@@ -3,10 +3,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using CodeClassifier.Classifiers;
 
 #endregion
 
-namespace CodeClassifier.Classifiers.Bayess
+namespace Bayes.Bayess
 {
     [Export(typeof(IClassifier))]
     public class BayesianClassifier : IClassifier
@@ -38,7 +39,7 @@ namespace CodeClassifier.Classifiers.Bayess
                             valuePair =>
                                 valuePair.Value.Key == 0 && valuePair.Value.Value == 0
                                     ? Neutral
-                                    : (double) valuePair.Value.Key/(valuePair.Value.Key + valuePair.Value.Value)));
+                                    : (double)valuePair.Value.Key / (valuePair.Value.Key + valuePair.Value.Value)));
                 }
                 _classifier = new Bayess(dataBase);
                 _isInitialized = true;
@@ -49,7 +50,7 @@ namespace CodeClassifier.Classifiers.Bayess
                         valuePair =>
                             valuePair.Value.Key == 0 && valuePair.Value.Value == 0
                                 ? Neutral
-                                : (double) valuePair.Value.Key/(valuePair.Value.Key + valuePair.Value.Value)).ToArray());
+                                : (double)valuePair.Value.Key / (valuePair.Value.Key + valuePair.Value.Value)).ToArray());
         }
 
         public override string ToString()

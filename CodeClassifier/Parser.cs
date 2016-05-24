@@ -34,23 +34,23 @@ namespace CodeClassifier
                     .OfType<FieldDeclarationSyntax>().ToArray();
 
             dict.Add("private fields", (from fieldDeclarationSyntax in fieldList
-                where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "private")
-                from name in
-                    fieldDeclarationSyntax.Declaration.Variables.Select(
-                        variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
-                select name).ToList());
+                                        where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "private")
+                                        from name in
+                                            fieldDeclarationSyntax.Declaration.Variables.Select(
+                                                variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
+                                        select name).ToList());
             dict.Add("public fields", (from fieldDeclarationSyntax in fieldList
-                where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "public")
-                from name in
-                    fieldDeclarationSyntax.Declaration.Variables.Select(
-                        variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
-                select name).ToList());
+                                       where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "public")
+                                       from name in
+                                           fieldDeclarationSyntax.Declaration.Variables.Select(
+                                               variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
+                                       select name).ToList());
             dict.Add("protected fields", (from fieldDeclarationSyntax in fieldList
-                where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "protected")
-                from name in
-                    fieldDeclarationSyntax.Declaration.Variables.Select(
-                        variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
-                select name).ToList());
+                                          where fieldDeclarationSyntax.Modifiers.Any(p => p.ToString() == "protected")
+                                          from name in
+                                              fieldDeclarationSyntax.Declaration.Variables.Select(
+                                                  variableDeclaratorSyntax => variableDeclaratorSyntax.Identifier.ToString()).ToList()
+                                          select name).ToList());
 
 
             var methodList =
@@ -59,50 +59,50 @@ namespace CodeClassifier
                     .OfType<MethodDeclarationSyntax>().ToArray();
 
             dict.Add("public methods", (from methodDeclarationSyntax in methodList
-                where
-                    (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "public") &&
-                     methodDeclarationSyntax.Identifier.ToString() != string.Empty)
-                select methodDeclarationSyntax.Identifier.ToString()).ToList());
+                                        where
+                                            (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "public") &&
+                                             methodDeclarationSyntax.Identifier.ToString() != string.Empty)
+                                        select methodDeclarationSyntax.Identifier.ToString()).ToList());
 
             dict.Add("private methods", (from methodDeclarationSyntax in methodList
-                where
-                    (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "private") &&
-                     methodDeclarationSyntax.Identifier.ToString() != string.Empty)
-                select methodDeclarationSyntax.Identifier.ToString()).ToList());
+                                         where
+                                             (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "private") &&
+                                              methodDeclarationSyntax.Identifier.ToString() != string.Empty)
+                                         select methodDeclarationSyntax.Identifier.ToString()).ToList());
 
             dict.Add("protected methods", (from methodDeclarationSyntax in methodList
-                where
-                    (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "protected") &&
-                     methodDeclarationSyntax.Identifier.ToString() != string.Empty)
-                select methodDeclarationSyntax.Identifier.ToString()).ToList());
+                                           where
+                                               (methodDeclarationSyntax.Modifiers.Any(p => p.ToString() == "protected") &&
+                                                methodDeclarationSyntax.Identifier.ToString() != string.Empty)
+                                           select methodDeclarationSyntax.Identifier.ToString()).ToList());
 
             dict.Add("method parameters", (from param in
                 (from methodDeclarationSyntax in methodList
-                    select methodDeclarationSyntax.ParameterList.Parameters).Where(p => p.Any())
-                from parameterSyntax in param
-                where parameterSyntax.Identifier.ToString() != string.Empty
-                select parameterSyntax.Identifier.ToString()).ToList());
+                 select methodDeclarationSyntax.ParameterList.Parameters).Where(p => p.Any())
+                                           from parameterSyntax in param
+                                           where parameterSyntax.Identifier.ToString() != string.Empty
+                                           select parameterSyntax.Identifier.ToString()).ToList());
 
 
             dict.Add("classes",
                 (from classDeclarationSyntax in syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>()
-                    where classDeclarationSyntax.Identifier.ToString() != string.Empty
-                    select classDeclarationSyntax.Identifier.ToString()).ToList());
+                 where classDeclarationSyntax.Identifier.ToString() != string.Empty
+                 select classDeclarationSyntax.Identifier.ToString()).ToList());
 
 
             dict.Add("local variables", (from varName in
                 (from variableDeclarationSyntax in
                     syntaxTree.GetRoot().DescendantNodes().OfType<VariableDeclarationSyntax>()
-                    select variableDeclarationSyntax.Variables)
-                from variableDeclaratorSyntax
-                    in varName
-                select variableDeclaratorSyntax.Identifier.ToString()).ToList());
+                 select variableDeclarationSyntax.Variables)
+                                         from variableDeclaratorSyntax
+                                             in varName
+                                         select variableDeclaratorSyntax.Identifier.ToString()).ToList());
 
 
             dict.Add("properties",
                 (from propertyDeclarationSyntax in
                     syntaxTree.GetRoot().DescendantNodes().OfType<PropertyDeclarationSyntax>()
-                    select propertyDeclarationSyntax.Identifier.ToString()).ToList());
+                 select propertyDeclarationSyntax.Identifier.ToString()).ToList());
 
 
             try

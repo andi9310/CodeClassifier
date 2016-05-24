@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,8 +12,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using CodeClassifier.Classifiers;
 using Microsoft.Win32;
-using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 
 #endregion
 
@@ -35,44 +35,37 @@ namespace CodeClassifier
         private ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>> _learningSet;
 
 
-        readonly object _progresslock = new object();
+        private readonly object _progresslock = new object();
 
         public int ItemsToTeach { get; private set; }
         public int ItemsToTeachByClassifiers { get; private set; }
 
+#pragma warning disable 649
         [ImportMany]
-        IEnumerable<Lazy<IClassifier>> externalClassifiers;
-        private CompositionContainer _container;
-
-        //private double Progress { get; set; }
+        private IEnumerable<Lazy<IClassifier>> _externalClassifiers;
+#pragma warning restore 649
 
         public MainWindow()
         {
-            //An aggregate catalog that combines multiple catalogs
-            var catalog = new AggregateCatalog();
-            //Adds all the parts found in the same assembly as the Program class
-            catalog.Catalogs.Add(new AssemblyCatalog(typeof(MainWindow).Assembly));
-            catalog.Catalogs.Add(new DirectoryCatalog(@"C:\Users\apodgors\Desktop\klasife\Extensions"));
-
-
-            //Create the CompositionContainer with the parts in the catalog
-            _container = new CompositionContainer(catalog);
-
-            //Fill the imports of this object
-            try
-            {
-                this._container.ComposeParts(this);
-            }
-            catch (CompositionException compositionException)
-            {
-                Console.WriteLine(compositionException.ToString());
-            }
             InitializeComponent();
+
+            var catalog = new AggregateCatalog();
+            catalog.Catalogs.Add(new AssemblyCatalog(typeof(MainWindow).Assembly));
+
+            if (Directory.Exists(Directory.GetCurrentDirectory() + @"\Extensions"))
+            {
+                catalog.Catalogs.Add(new DirectoryCatalog(Directory.GetCurrentDirectory() + @"\Extensions"));
+            }
+            var container = new CompositionContainer(catalog);
+
+            container.ComposeParts(this);
             _classifiers = new List<IClassifier>();
-            foreach (var externalClassifier in externalClassifiers)
+            foreach (var externalClassifier in _externalClassifiers)
             {
                 _classifiers.Add(externalClassifier.Value);
             }
+            _classifiers = _classifiers.OrderBy(x => x.ToString()).ToList();
+
             ClassifierSelector.ItemsSource = _classifiers;
             ClassifierSelector.SelectedIndex = 0;
             IsFileOpen = false;
@@ -87,14 +80,10 @@ namespace CodeClassifier
         [DllImport("Kernel32")]
         private static extern void FreeConsole();
 
-        /*
-                public string DataBaseFileName { get; set; }
-        */
 
         private void TeachClassifier(string author)
         {
             _learningSet = new ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>>();
-            // _progress = 0.0;
             _isStopped = false;
 
             _name = author;
@@ -129,7 +118,6 @@ namespace CodeClassifier
                     lock (_progresslock)
                     {
                         Dispatcher.Invoke(() => Pb2.Value++);
-
                     }
                 }
             });
@@ -137,7 +125,7 @@ namespace CodeClassifier
 
         private ParallelLoopResult ParseAll()
         {
-            var x =  Parallel.ForEach
+            var x = Parallel.ForEach
                 (
                     _files.Skip((int)_lastParsed),
                     (file, state) =>
@@ -350,10 +338,10 @@ namespace CodeClassifier
                     }
 
                     Console.WriteLine();
-                    Console.WriteLine(@"{0} {1}", classifiersResult.Key, classifiersResult.Value.Mean());
+                    Console.WriteLine($@"{classifiersResult.Key} {classifiersResult.Value.Mean()}");
                     foreach (var programmer in byProgrammers)
                     {
-                        Console.WriteLine(@"{0} {1}", programmer.Key, programmer.Value.Mean());
+                        Console.WriteLine($@"{programmer.Key} {programmer.Value.Mean()}");
                     }
                 }
             }

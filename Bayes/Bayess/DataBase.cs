@@ -7,7 +7,7 @@ using System.Linq;
 
 #endregion
 
-namespace CodeClassifier.Classifiers.Bayess
+namespace Bayes.Bayess
 {
     [Serializable]
     public class DataBase

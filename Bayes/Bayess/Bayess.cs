@@ -4,10 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using CodeClassifier;
 
 #endregion
 
-namespace CodeClassifier.Classifiers.Bayess
+namespace Bayes.Bayess
 {
     public class Bayess
     {

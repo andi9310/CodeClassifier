@@ -3,10 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CodeClassifier.Classifiers;
 
 #endregion
 
-namespace CodeClassifier.Classifiers.KNN
+namespace KNN.KNN
 {
     public class KNearestNeighboursClassifier : IClassifier
     {

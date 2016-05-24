@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.Composition;
+using CodeClassifier.Classifiers;
 
-namespace CodeClassifier.Classifiers.KNN
+namespace KNN.KNN
 {
     [Export(typeof(IClassifier))]
-    class KNN1 : KNearestNeighboursClassifier
+    internal class Knn1 : KNearestNeighboursClassifier
     {
-        public KNN1() : base(1)
+        public Knn1() : base(1)
         { }
     }
 }
