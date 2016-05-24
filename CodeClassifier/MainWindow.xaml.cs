@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using CodeClassifier.Classifiers;
-using CodeClassifier.Classifiers.Bayess;
-using CodeClassifier.Classifiers.KNN;
 using Microsoft.Win32;
+using System.ComponentModel.Composition;
+using System.ComponentModel.Composition.Hosting;
 
 #endregion
 
@@ -40,15 +40,38 @@ namespace CodeClassifier
         public int ItemsToTeach { get; private set; }
         public int ItemsToTeachByClassifiers { get; private set; }
 
+        [ImportMany]
+        IEnumerable<Lazy<IClassifier>> externalClassifiers;
+        private CompositionContainer _container;
+
         //private double Progress { get; set; }
 
         public MainWindow()
         {
-            InitializeComponent();
-            _classifiers = new List<IClassifier> { new BayesianClassifier() };
-            for (var i = 1; i <= 130; i *= 2)
+            //An aggregate catalog that combines multiple catalogs
+            var catalog = new AggregateCatalog();
+            //Adds all the parts found in the same assembly as the Program class
+            catalog.Catalogs.Add(new AssemblyCatalog(typeof(MainWindow).Assembly));
+            catalog.Catalogs.Add(new DirectoryCatalog(@"C:\Users\apodgors\Desktop\klasife\Extensions"));
+
+
+            //Create the CompositionContainer with the parts in the catalog
+            _container = new CompositionContainer(catalog);
+
+            //Fill the imports of this object
+            try
             {
-                _classifiers.Add(new KNearestNeighboursClassifier(i));
+                this._container.ComposeParts(this);
+            }
+            catch (CompositionException compositionException)
+            {
+                Console.WriteLine(compositionException.ToString());
+            }
+            InitializeComponent();
+            _classifiers = new List<IClassifier>();
+            foreach (var externalClassifier in externalClassifiers)
+            {
+                _classifiers.Add(externalClassifier.Value);
             }
             ClassifierSelector.ItemsSource = _classifiers;
             ClassifierSelector.SelectedIndex = 0;

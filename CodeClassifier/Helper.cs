@@ -6,7 +6,7 @@ using System.Linq;
 
 #endregion
 
-namespace CodeClassifier.Classifiers.Bayess
+namespace CodeClassifier
 {
     public static class Helper
     {

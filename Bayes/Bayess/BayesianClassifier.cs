@@ -1,12 +1,14 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 
 #endregion
 
 namespace CodeClassifier.Classifiers.Bayess
 {
+    [Export(typeof(IClassifier))]
     public class BayesianClassifier : IClassifier
     {
         private const double Neutral = 0.5;

@@ -56,6 +56,7 @@
     <Reference Include="System.Collections.Immutable">
       <HintPath>..\packages\Microsoft.Bcl.Immutable.1.1.20-beta\lib\portable-net45+win8\System.Collections.Immutable.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Reflection.Metadata">
       <HintPath>..\packages\Microsoft.Bcl.Metadata.1.0.9-alpha\lib\portable-net45+win8\System.Reflection.Metadata.dll</HintPath>
@@ -77,9 +78,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Classifiers\Bayess\BayesianClassifier.cs" />
     <Compile Include="Classifiers\IClassifier.cs" />
-    <Compile Include="Classifiers\KNN\KNearestNeighboursClassifier.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ResultsInfo.cs" />
     <Compile Include="Serializer.cs" />
@@ -91,9 +91,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classifiers\Bayess\Bayess.cs" />
-    <Compile Include="Classifiers\Bayess\DataBase.cs" />
-    <Compile Include="Classifiers\Bayess\Helper.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
