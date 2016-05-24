@@ -7,6 +7,7 @@ namespace KNN.KNN
     internal class Knn2 : KNearestNeighboursClassifier
     {
         public Knn2() : base(2)
-        { }
+        {
+        }
     }
 }

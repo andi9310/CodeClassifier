@@ -7,6 +7,7 @@ namespace KNN.KNN
     internal class Knn128 : KNearestNeighboursClassifier
     {
         public Knn128() : base(128)
-        { }
+        {
+        }
     }
 }

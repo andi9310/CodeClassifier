@@ -13,25 +13,20 @@ namespace Bayes.Bayess
     public class Bayess
     {
         private const double Tolerance = 1E-12;
-        private DataSet _dataSet = new DataSet();
 
         public Bayess(DataBase db)
         {
             TrainClassifier(db.Data);
         }
 
-        public DataSet DataSet
-        {
-            get { return _dataSet; }
-            set { _dataSet = value; }
-        }
+        public DataSet DataSet { get; set; } = new DataSet();
 
         private void TrainClassifier(DataTable table)
         {
-            _dataSet.Tables.Add(table);
+            DataSet.Tables.Add(table);
 
             //table
-            var gaussianDistribution = _dataSet.Tables.Add("Gaussian");
+            var gaussianDistribution = DataSet.Tables.Add("Gaussian");
             gaussianDistribution.Columns.Add(table.Columns[0].ColumnName);
 
             //columns
@@ -69,8 +64,8 @@ namespace Bayes.Bayess
         {
             var score = new Dictionary<string, double>();
 
-            var results = (from myRow in _dataSet.Tables[0].AsEnumerable()
-                group myRow by myRow.Field<string>(_dataSet.Tables[0].Columns[0].ColumnName)
+            var results = (from myRow in DataSet.Tables[0].AsEnumerable()
+                group myRow by myRow.Field<string>(DataSet.Tables[0].Columns[0].ColumnName)
                 into g
                 select new {Name = g.Key, Count = g.Count()}).ToList();
 
@@ -78,10 +73,10 @@ namespace Bayes.Bayess
             {
                 var subScoreList = new List<double>();
                 int a = 1, b = 1;
-                for (var k = 1; k < _dataSet.Tables["Gaussian"].Columns.Count; k = k + 2)
+                for (var k = 1; k < DataSet.Tables["Gaussian"].Columns.Count; k = k + 2)
                 {
-                    var mean = Convert.ToDouble(_dataSet.Tables["Gaussian"].Rows[i][a]);
-                    var variance = Convert.ToDouble(_dataSet.Tables["Gaussian"].Rows[i][++a]);
+                    var mean = Convert.ToDouble(DataSet.Tables["Gaussian"].Rows[i][a]);
+                    var variance = Convert.ToDouble(DataSet.Tables["Gaussian"].Rows[i][++a]);
                     var result = Helper.NormalDist(obj[b - 1], mean, Helper.SquareRoot(variance));
                     subScoreList.Add(result);
                     a++;
@@ -122,7 +117,7 @@ namespace Bayes.Bayess
 
         public void Clear()
         {
-            _dataSet = new DataSet();
+            DataSet = new DataSet();
         }
 
         #endregion

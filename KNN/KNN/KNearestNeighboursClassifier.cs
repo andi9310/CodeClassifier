@@ -28,7 +28,7 @@ namespace KNN.KNN
             var list =
                 learningData.Value.Select(
                     val =>
-                        Double.IsNaN((double) val.Value.Key/(val.Value.Key + val.Value.Value))
+                        double.IsNaN((double) val.Value.Key/(val.Value.Key + val.Value.Value))
                             ? Neutral
                             : (double) val.Value.Key/(val.Value.Key + val.Value.Value)).ToList();
             _teachingList.Add(new KeyValuePair<string, List<double>>(learningData.Key, list));
@@ -36,16 +36,16 @@ namespace KNN.KNN
 
         public string Classify(Dictionary<string, KeyValuePair<int, int>> classificationData)
         {
-          //  var list = classificationData.ToList();
+            //  var list = classificationData.ToList();
 
             var kNearest = (from keyValuePair in _teachingList.AsParallel()
                 let dist =
                     classificationData.Select(
                         (t, i) =>
                             Math.Pow(
-                                Double.IsNaN((double) (t.Value.Key)/(t.Value.Value + t.Value.Key))
+                                double.IsNaN((double) t.Value.Key/(t.Value.Value + t.Value.Key))
                                     ? Neutral
-                                    : (double) (t.Value.Key)/(t.Value.Value + t.Value.Key) - keyValuePair.Value[i], 2))
+                                    : (double) t.Value.Key/(t.Value.Value + t.Value.Key) - keyValuePair.Value[i], 2))
                         .Sum()
                 select new KeyValuePair<string, double>(keyValuePair.Key, dist)).OrderBy(p => p.Value)
                 .Take(K)

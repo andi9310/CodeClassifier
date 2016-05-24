@@ -18,7 +18,7 @@ namespace Bayes.Bayess
             Data.Columns.Add(className);
             foreach (var s in prop)
             {
-                Data.Columns.Add(s, typeof (double));
+                Data.Columns.Add(s, typeof(double));
             }
         }
 

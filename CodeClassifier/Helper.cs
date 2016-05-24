@@ -48,7 +48,7 @@ namespace CodeClassifier
             for (var i = 1; i < parts - 1; i++)
             {
                 integral += 0.5*width*(NormalDist(lowBound + width*i, mean, standardDev) +
-                                       (NormalDist(lowBound + width*(i + 1), mean, standardDev)));
+                                       NormalDist(lowBound + width*(i + 1), mean, standardDev));
             }
             return integral;
         }

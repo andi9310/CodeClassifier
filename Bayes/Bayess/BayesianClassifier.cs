@@ -28,7 +28,15 @@ namespace Bayes.Bayess
 
         public string Classify(Dictionary<string, KeyValuePair<int, int>> classificationData)
         {
-            if (!_isInitialized)
+            if (_isInitialized)
+                return
+                    _classifier.Classify(
+                        classificationData.Select(
+                            valuePair =>
+                                valuePair.Value.Key == 0 && valuePair.Value.Value == 0
+                                    ? Neutral
+                                    : (double) valuePair.Value.Key/(valuePair.Value.Key + valuePair.Value.Value))
+                            .ToArray());
             {
                 var dataBase = new DataBase("programmerID", _learningSet.First().Value.Keys);
 
@@ -39,7 +47,7 @@ namespace Bayes.Bayess
                             valuePair =>
                                 valuePair.Value.Key == 0 && valuePair.Value.Value == 0
                                     ? Neutral
-                                    : (double)valuePair.Value.Key / (valuePair.Value.Key + valuePair.Value.Value)));
+                                    : (double) valuePair.Value.Key/(valuePair.Value.Key + valuePair.Value.Value)));
                 }
                 _classifier = new Bayess(dataBase);
                 _isInitialized = true;
@@ -50,7 +58,7 @@ namespace Bayes.Bayess
                         valuePair =>
                             valuePair.Value.Key == 0 && valuePair.Value.Value == 0
                                 ? Neutral
-                                : (double)valuePair.Value.Key / (valuePair.Value.Key + valuePair.Value.Value)).ToArray());
+                                : (double) valuePair.Value.Key/(valuePair.Value.Key + valuePair.Value.Value)).ToArray());
         }
 
         public override string ToString()

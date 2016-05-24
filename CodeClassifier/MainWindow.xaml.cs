@@ -24,26 +24,20 @@ namespace CodeClassifier
     {
         private const double Alpha = 1.0;
         private readonly List<IClassifier> _classifiers;
-        public int ParsingProgress { get; set; } = 10;
-        public int TeachingProgress { get; set; } = 0;
-        private string[] _files;
-        private bool _isPaused;
-        private bool _isStopped;
-        private long _lastParsed;
-        private bool _isParsingInProgress;
-        private string _name;
-        private ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>> _learningSet;
 
 
         private readonly object _progresslock = new object();
 
-        public int ItemsToTeach { get; private set; }
-        public int ItemsToTeachByClassifiers { get; private set; }
-
 #pragma warning disable 649
-        [ImportMany]
-        private IEnumerable<Lazy<IClassifier>> _externalClassifiers;
+        [ImportMany] private IEnumerable<Lazy<IClassifier>> _externalClassifiers;
 #pragma warning restore 649
+        private string[] _files;
+        private bool _isParsingInProgress;
+        private bool _isPaused;
+        private bool _isStopped;
+        private long _lastParsed;
+        private ConcurrentBag<KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>> _learningSet;
+        private string _name;
 
         public MainWindow()
         {
@@ -71,6 +65,12 @@ namespace CodeClassifier
             IsFileOpen = false;
         }
 
+        public int ParsingProgress { get; set; } = 10;
+        public int TeachingProgress { get; set; } = 0;
+
+        public int ItemsToTeach { get; private set; }
+        public int ItemsToTeachByClassifiers { get; private set; }
+
 
         public bool IsFileOpen { get; set; }
 
@@ -87,19 +87,19 @@ namespace CodeClassifier
             _isStopped = false;
 
             _name = author;
-            var ofd = new OpenFileDialog { Multiselect = true };
+            var ofd = new OpenFileDialog {Multiselect = true};
             var result = ofd.ShowDialog();
             if (result != true) return;
             _files = ofd.FileNames;
             Dispatcher.Invoke(() => Pb.Value = 0);
             Dispatcher.Invoke(() => Pb2.Value = 0);
             Dispatcher.Invoke(() => Pb.Maximum = _files.Length);
-            Dispatcher.Invoke(() => Pb2.Maximum = Pb.Maximum * _classifiers.Count);
+            Dispatcher.Invoke(() => Pb2.Maximum = Pb.Maximum*_classifiers.Count);
             ItemsToTeach = _files.Length;
-            ItemsToTeachByClassifiers = ItemsToTeach * _classifiers.Count;
+            ItemsToTeachByClassifiers = ItemsToTeach*_classifiers.Count;
             _isParsingInProgress = true;
             var parsingLoopResult = ParseAll();
-            _lastParsed += parsingLoopResult.LowestBreakIteration ?? (ItemsToTeach - _lastParsed);
+            _lastParsed += parsingLoopResult.LowestBreakIteration ?? ItemsToTeach - _lastParsed;
             _isParsingInProgress = false;
             if (_lastParsed == ItemsToTeach)
             {
@@ -109,7 +109,6 @@ namespace CodeClassifier
 
         private void TeachAll()
         {
-
             Parallel.ForEach(_classifiers, classifier =>
             {
                 foreach (var keyValuePair in _learningSet)
@@ -127,7 +126,7 @@ namespace CodeClassifier
         {
             var x = Parallel.ForEach
                 (
-                    _files.Skip((int)_lastParsed),
+                    _files.Skip((int) _lastParsed),
                     (file, state) =>
                     {
                         if (_isPaused)
@@ -143,15 +142,15 @@ namespace CodeClassifier
                             using (var sr = new StreamReader(File.Open(file, FileMode.Open)))
                             {
                                 var parser = new Parser(sr);
-                                _learningSet.Add(new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(_name, parser.Parse()));
-
+                                _learningSet.Add(
+                                    new KeyValuePair<string, Dictionary<string, KeyValuePair<int, int>>>(_name,
+                                        parser.Parse()));
                             }
                             lock (_progresslock)
                             {
                                 Dispatcher.Invoke(() => Pb.Value++);
                             }
                         }
-
                     });
             return x;
         }
@@ -224,7 +223,7 @@ namespace CodeClassifier
                         var list = programmerFolder.EnumerateFiles().OrderBy(i => random.Next()).ToList();
 
                         var folder1 = programmerFolder;
-                        Parallel.ForEach(list.Take((int)(list.Count * 0.7)), file =>
+                        Parallel.ForEach(list.Take((int) (list.Count*0.7)), file =>
                         {
                             using (var sr = new StreamReader(file.Open(FileMode.Open)))
                             {
@@ -235,7 +234,7 @@ namespace CodeClassifier
                         });
 
                         var programmerFolder1 = programmerFolder;
-                        Parallel.ForEach(list.Skip((int)(list.Count * 0.7)), file =>
+                        Parallel.ForEach(list.Skip((int) (list.Count*0.7)), file =>
                         {
                             using (var sr = new StreamReader(file.Open(FileMode.Open)))
                             {
@@ -257,7 +256,6 @@ namespace CodeClassifier
                         new Dictionary<string, Dictionary<string, ResultsInfo>>();
                     foreach (var classifier in _classifiers)
                     {
-
                         resultsNumbersDictionary.Add(classifier.ToString(),
                             new Dictionary<string, ResultsInfo>());
 
@@ -266,7 +264,6 @@ namespace CodeClassifier
                             resultsNumbersDictionary[classifier.ToString()].Add(directory.Name,
                                 new ResultsInfo());
                         }
-
                     }
 
                     foreach (var classifier in _classifiers)
@@ -288,26 +285,25 @@ namespace CodeClassifier
                             //  Console.WriteLine("test skonczony");
                         }
                         Console.Error.WriteLine("klasifajer skonczony");
-
                     }
                     var programmersResults = new Dictionary<string, List<KeyValuePair<string, double>>>();
                     foreach (var classifier in resultsNumbersDictionary)
                     {
                         var listF = (from result in classifier.Value
-                                     let precision = result.Value.RelevantRetrieved / (double)result.Value.Retrieved
-                                     let recall = result.Value.RelevantRetrieved / (double)result.Value.Relevant
-                                     select
-                                         new KeyValuePair<string, double>(result.Key,
-                                             result.Value.Retrieved != 0
-                                                 ? (1 + Alpha) * precision * recall / (Alpha * precision + recall)
-                                                 : 0)).ToList();
+                            let precision = result.Value.RelevantRetrieved/(double) result.Value.Retrieved
+                            let recall = result.Value.RelevantRetrieved/(double) result.Value.Relevant
+                            select
+                                new KeyValuePair<string, double>(result.Key,
+                                    result.Value.Retrieved != 0
+                                        ? (1 + Alpha)*precision*recall/(Alpha*precision + recall)
+                                        : 0)).ToList();
                         try
                         {
                             classifiersResults[classifier.Key].Add(listF.Select(i => i.Value).Mean());
                         }
                         catch (KeyNotFoundException)
                         {
-                            classifiersResults.Add(classifier.Key, new List<double> { listF.Select(i => i.Value).Mean() });
+                            classifiersResults.Add(classifier.Key, new List<double> {listF.Select(i => i.Value).Mean()});
                         }
                         try
                         {
@@ -333,7 +329,7 @@ namespace CodeClassifier
                         }
                         catch (KeyNotFoundException)
                         {
-                            byProgrammers.Add(programmer.Key, new List<double> { programmer.Value });
+                            byProgrammers.Add(programmer.Key, new List<double> {programmer.Value});
                         }
                     }
 
@@ -367,7 +363,7 @@ namespace CodeClassifier
                 _isPaused = false;
                 _isParsingInProgress = true;
                 var parsingLoopResult = ParseAll();
-                _lastParsed += parsingLoopResult.LowestBreakIteration ?? (ItemsToTeach - _lastParsed);
+                _lastParsed += parsingLoopResult.LowestBreakIteration ?? ItemsToTeach - _lastParsed;
                 _isParsingInProgress = false;
                 if (_lastParsed != ItemsToTeach) return;
                 TeachAll();
